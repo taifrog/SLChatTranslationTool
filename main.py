@@ -124,6 +124,8 @@ class TranslatorApp:
         self.section_b.pack(fill=tk.BOTH, expand=True)
         self._build_section_b()
 
+        self._update_window_size()
+
     def _build_section_a(self):
         container = self.section_a.container
 
