@@ -72,6 +72,15 @@ class TranslatorApp:
         "ES": "スペイン語",
     }
 
+    SOURCE_LANG_OPTIONS = {
+        "Auto": "自動検出",
+        "JA": "日本語",
+        "EN-US": "英語（米国）",
+        "EN-GB": "英語（英国）",
+        "FR": "フランス語",
+        "ES": "スペイン語",
+    }
+
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("SL Chat Translator")
@@ -97,7 +106,7 @@ class TranslatorApp:
         self.seen_lines = set()
         self.poll_after_id = None
         self.skip_messages = [s.lower() for s in self.config.get("skip_messages", [])]
-        self.skip_speakers = [s.lower() for s in self.config.get("skip_speakers", [])]
+        self.skip_speakers = [s.lower().rstrip(":") for s in self.config.get("skip_speakers", [])]
 
         self._build_ui()
         self.root.bind("<<SectionToggled>>", self._update_window_size)
@@ -120,7 +129,19 @@ class TranslatorApp:
         # 言語選択
         lang_frame = tk.Frame(container)
         lang_frame.pack(fill=tk.X, pady=(0, 4))
-        tk.Label(lang_frame, text="翻訳先:").pack(side=tk.LEFT)
+        tk.Label(lang_frame, text="翻訳元:").pack(side=tk.LEFT)
+        self.source_lang_var = tk.StringVar(value="JA")
+        self.source_lang_combo = ttk.Combobox(
+            lang_frame,
+            textvariable=self.source_lang_var,
+            values=list(self.SOURCE_LANG_OPTIONS.keys()),
+            state="readonly",
+            width=10,
+        )
+        self.source_lang_combo.pack(side=tk.LEFT, padx=(4, 0))
+        self.source_lang_combo.bind("<<ComboboxSelected>>", lambda e: self.input_box.focus_set())
+
+        tk.Label(lang_frame, text="翻訳先:").pack(side=tk.LEFT, padx=(12, 0))
         self.lang_var = tk.StringVar(value=self.default_target)
         self.lang_combo = ttk.Combobox(
             lang_frame,
@@ -144,7 +165,7 @@ class TranslatorApp:
         self.translate_btn.pack(fill=tk.X, pady=(0, 4))
 
         # 翻訳結果（リサイズ対応）
-        self.output_box = tk.Text(container, height=2, wrap=tk.WORD, font=("Meiryo", 10), state=tk.DISABLED)
+        self.output_box = tk.Text(container, height=2, wrap=tk.WORD, font=("Meiryo", 10))
         self.output_box.pack(fill=tk.BOTH, expand=True, pady=(0, 4))
 
         # 翻訳前も表示チェックボックス
@@ -210,9 +231,12 @@ class TranslatorApp:
     def _on_shift_enter(self, event):
         return None  # 普通に改行
 
-    def _translate(self, text=None, source_lang="JA", target_lang=None):
+    def _translate(self, text=None, source_lang=None, target_lang=None):
         if target_lang is None:
             target_lang = self.lang_var.get()
+        if source_lang is None:
+            selected = self.source_lang_var.get()
+            source_lang = None if selected == "Auto" else selected
         if text is None:
             text = self.input_box.get("1.0", tk.END).strip()
         if not text:
@@ -225,13 +249,10 @@ class TranslatorApp:
             messagebox.showerror("翻訳エラー", str(e))
             return
 
-        if source_lang == "JA":
-            display_text = f"{text}（{translated}）" if self.show_original_var.get() else translated
-            self.output_box.config(state=tk.NORMAL)
-            self.output_box.delete("1.0", tk.END)
-            self.output_box.insert(tk.END, display_text)
-            self.output_box.config(state=tk.DISABLED)
-            self._copy_to_clipboard(display_text)
+        display_text = f"{text}（{translated}）" if self.show_original_var.get() else translated
+        self.output_box.delete("1.0", tk.END)
+        self.output_box.insert(tk.END, display_text)
+        self._copy_to_clipboard(display_text)
         return translated
 
     def _copy_to_clipboard(self, text=None):
