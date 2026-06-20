@@ -188,6 +188,31 @@ class TranslatorApp:
     def _build_section_b(self):
         container = self.section_b.container
 
+        # 言語選択
+        lang_frame = tk.Frame(container)
+        lang_frame.pack(fill=tk.X, pady=(0, 4))
+        tk.Label(lang_frame, text="翻訳元:").pack(side=tk.LEFT)
+        self.watch_source_lang_var = tk.StringVar(value="Auto")
+        self.watch_source_lang_combo = ttk.Combobox(
+            lang_frame,
+            textvariable=self.watch_source_lang_var,
+            values=list(self.SOURCE_LANG_OPTIONS.keys()),
+            state="readonly",
+            width=10,
+        )
+        self.watch_source_lang_combo.pack(side=tk.LEFT, padx=(4, 0))
+
+        tk.Label(lang_frame, text="翻訳先:").pack(side=tk.LEFT, padx=(12, 0))
+        self.watch_target_lang_var = tk.StringVar(value="JA")
+        self.watch_target_lang_combo = ttk.Combobox(
+            lang_frame,
+            textvariable=self.watch_target_lang_var,
+            values=list(self.LANG_OPTIONS.keys()) + ["JA"],
+            state="readonly",
+            width=10,
+        )
+        self.watch_target_lang_combo.pack(side=tk.LEFT, padx=(4, 0))
+
         folder_frame = tk.Frame(container)
         folder_frame.pack(fill=tk.X, pady=(0, 4))
         tk.Label(folder_frame, text="ログフォルダ:").pack(side=tk.LEFT)
@@ -237,10 +262,10 @@ class TranslatorApp:
     def _on_shift_enter(self, event):
         return None  # 普通に改行
 
-    def _translate(self, text=None, source_lang=None, target_lang=None):
+    def _translate(self, text=None, source_lang=..., target_lang=None):
         if target_lang is None:
             target_lang = self.lang_var.get()
-        if source_lang is None:
+        if source_lang is ...:
             selected = self.source_lang_var.get()
             source_lang = None if selected == "Auto" else selected
         if text is None:
@@ -372,7 +397,10 @@ class TranslatorApp:
                     # メッセージスキップチェック（完全一致、大文字小文字無視）
                     if message.strip().lower() in self.skip_messages:
                         continue
-                    translated = self._translate(text=message, source_lang=None, target_lang="JA")
+                    watch_source = self.watch_source_lang_var.get()
+                    watch_source_lang = None if watch_source == "Auto" else watch_source
+                    watch_target = self.watch_target_lang_var.get()
+                    translated = self._translate(text=message, source_lang=watch_source_lang, target_lang=watch_target)
                     if translated:
                         display = f"{message}（{translated}）" if self.show_original_var.get() else translated
                         self._add_history(name, display)
