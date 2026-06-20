@@ -22,6 +22,7 @@ pip install -r requirements.txt
 
 ### 2. DeepL APIキーを設定 / チャットログフォルダの指定
 
+`config.json.sample`の名前をconfig.jsonに変更してください。
 `config.json` を開き、api_keyを実際のAPIキーに置き換えてください。
 また、chat_log_folderに利用するブラウザのチャットログフォルダを指定してください。
 
