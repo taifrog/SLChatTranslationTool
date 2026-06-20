@@ -97,6 +97,7 @@ class TranslatorApp:
 
         self.translator = deepl.Translator(api_key)
         self.default_target = self.config.get("default_target_lang", "EN-US")
+        self.default_source = self.config.get("default_source_lang", "JA")
 
         # チャットログ監視用
         self.chat_log_folder = self.config.get("chat_log_folder", "")
@@ -115,7 +116,7 @@ class TranslatorApp:
         self.main_frame = tk.Frame(self.root, padx=8, pady=8)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.section_a = SectionFrame(self.main_frame, "A. 手動翻訳")
+        self.section_a = SectionFrame(self.main_frame, "A. 手動翻訳", expanded=False)
         self.section_a.pack(fill=tk.BOTH, expand=True, pady=(0, 6))
         self._build_section_a()
 
@@ -130,7 +131,7 @@ class TranslatorApp:
         lang_frame = tk.Frame(container)
         lang_frame.pack(fill=tk.X, pady=(0, 4))
         tk.Label(lang_frame, text="翻訳元:").pack(side=tk.LEFT)
-        self.source_lang_var = tk.StringVar(value="JA")
+        self.source_lang_var = tk.StringVar(value=self.default_source)
         self.source_lang_combo = ttk.Combobox(
             lang_frame,
             textvariable=self.source_lang_var,
@@ -152,6 +153,9 @@ class TranslatorApp:
         )
         self.lang_combo.pack(side=tk.LEFT, padx=(4, 0))
         self.lang_combo.bind("<<ComboboxSelected>>", lambda e: self.input_box.focus_set())
+
+        self.clear_btn = tk.Button(lang_frame, text="❌ クリア", command=self._clear_input)
+        self.clear_btn.pack(side=tk.RIGHT)
 
         # 入力（リサイズ対応）
         self.input_box = tk.Text(container, height=2, wrap=tk.WORD, font=("Meiryo", 10))
@@ -254,6 +258,10 @@ class TranslatorApp:
         self.output_box.insert(tk.END, display_text)
         self._copy_to_clipboard(display_text)
         return translated
+
+    def _clear_input(self):
+        self.input_box.delete("1.0", tk.END)
+        self.input_box.focus_set()
 
     def _copy_to_clipboard(self, text=None):
         if text is None:
