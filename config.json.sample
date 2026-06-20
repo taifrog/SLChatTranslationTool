@@ -3,5 +3,5 @@
     "default_target_lang": "EN-US",
     "chat_log_folder": "[C:/xxxxxxxx]",
     "skip_messages": ["Hi", "Hello", "I'm OK", "Im OK", "OK", "Thanks", "Thank you", "lol", "Lol", "brb", "BRB", "afk", "AFK"],
-    "skip_speakers": ["Second Life :", "System"]
+    "skip_speakers": ["Second Life", "System"]
 }
