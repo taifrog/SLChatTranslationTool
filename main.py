@@ -213,15 +213,6 @@ class TranslatorApp:
         )
         self.watch_target_lang_combo.pack(side=tk.LEFT, padx=(4, 0))
 
-        folder_frame = tk.Frame(container)
-        folder_frame.pack(fill=tk.X, pady=(0, 4))
-        tk.Label(folder_frame, text="ログフォルダ:").pack(side=tk.LEFT)
-        self.folder_entry = tk.Entry(folder_frame, font=("Meiryo", 9))
-        self.folder_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(4, 0))
-        self.folder_entry.insert(0, self.chat_log_folder)
-        self.browse_btn = tk.Button(folder_frame, text="参照...", command=self._browse_folder)
-        self.browse_btn.pack(side=tk.LEFT, padx=(4, 0))
-
         file_frame = tk.Frame(container)
         file_frame.pack(fill=tk.X, pady=(0, 4))
         tk.Label(file_frame, text="ログファイル:").pack(side=tk.LEFT)
@@ -298,15 +289,8 @@ class TranslatorApp:
             self.copy_btn.config(text="✅ コピー完了")
             self.root.after(1500, lambda: self.copy_btn.config(text="📋 結果をコピー"))
 
-    def _browse_folder(self):
-        path = filedialog.askdirectory(initialdir=self.folder_entry.get() or os.path.expanduser("~"))
-        if path:
-            self.folder_entry.delete(0, tk.END)
-            self.folder_entry.insert(0, path)
-            self._refresh_files()
-
     def _refresh_files(self):
-        folder = self.folder_entry.get().strip()
+        folder = self.chat_log_folder
         if not folder or not os.path.isdir(folder):
             self.file_combo["values"] = []
             return
@@ -348,7 +332,7 @@ class TranslatorApp:
             return []
 
     def _start_watch(self):
-        folder = self.folder_entry.get().strip()
+        folder = self.chat_log_folder
         filename = self.file_combo.get()
         if not folder or not filename:
             messagebox.showwarning("注意", "フォルダとファイルを選択してください")
