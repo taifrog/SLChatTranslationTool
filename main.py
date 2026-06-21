@@ -156,6 +156,12 @@ class TranslatorApp:
         self.lang_combo.pack(side=tk.LEFT, padx=(4, 0))
         self.lang_combo.bind("<<ComboboxSelected>>", lambda e: self.input_box.focus_set())
 
+        self.show_original_var = tk.BooleanVar(value=False)
+        self.show_original_chk = tk.Checkbutton(
+            lang_frame, text="翻訳前も表示", variable=self.show_original_var
+        )
+        self.show_original_chk.pack(side=tk.LEFT, padx=(12, 0))
+
         self.clear_btn = tk.Button(lang_frame, text="❌ クリア", command=self._clear_input)
         self.clear_btn.pack(side=tk.RIGHT)
 
@@ -166,62 +172,63 @@ class TranslatorApp:
         self.input_box.bind("<Shift-Return>", self._on_shift_enter)
         self.input_box.focus_set()
 
-        # 翻訳ボタン
-        self.translate_btn = tk.Button(container, text="翻訳", command=lambda: self._translate())
-        self.translate_btn.pack(fill=tk.X, pady=(0, 4))
+        # 翻訳ボタン + コピーボタン
+        btn_frame = tk.Frame(container)
+        btn_frame.pack(fill=tk.X, pady=(0, 4))
+        self.translate_btn = tk.Button(btn_frame, text="翻訳", command=lambda: self._translate())
+        self.translate_btn.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.copy_btn = tk.Button(btn_frame, text="📋 結果をコピー", command=self._copy_to_clipboard)
+        self.copy_btn.pack(side=tk.LEFT, padx=(4, 0))
 
         # 翻訳結果（リサイズ対応）
         self.output_box = tk.Text(container, height=2, wrap=tk.WORD, font=("Meiryo", 10))
         self.output_box.pack(fill=tk.BOTH, expand=True, pady=(0, 4))
 
-        # 翻訳前も表示チェックボックス
-        self.show_original_var = tk.BooleanVar(value=False)
-        self.show_original_chk = tk.Checkbutton(
-            container, text="翻訳前の文字も表示", variable=self.show_original_var
-        )
-        self.show_original_chk.pack(anchor=tk.W)
-
-        # コピーボタン
-        self.copy_btn = tk.Button(container, text="📋 結果をコピー", command=self._copy_to_clipboard)
-        self.copy_btn.pack(anchor=tk.E)
-
     def _build_section_b(self):
         container = self.section_b.container
 
-        folder_frame = tk.Frame(container)
-        folder_frame.pack(fill=tk.X, pady=(0, 4))
-        tk.Label(folder_frame, text="ログフォルダ:").pack(side=tk.LEFT)
-        self.folder_entry = tk.Entry(folder_frame, font=("Meiryo", 9))
-        self.folder_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(4, 0))
-        self.folder_entry.insert(0, self.chat_log_folder)
-        self.browse_btn = tk.Button(folder_frame, text="参照...", command=self._browse_folder)
-        self.browse_btn.pack(side=tk.LEFT, padx=(4, 0))
+        # 言語選択
+        lang_frame = tk.Frame(container)
+        lang_frame.pack(fill=tk.X, pady=(0, 4))
+        tk.Label(lang_frame, text="翻訳元:").pack(side=tk.LEFT)
+        self.watch_source_lang_var = tk.StringVar(value="Auto")
+        self.watch_source_lang_combo = ttk.Combobox(
+            lang_frame,
+            textvariable=self.watch_source_lang_var,
+            values=list(self.SOURCE_LANG_OPTIONS.keys()),
+            state="readonly",
+            width=10,
+        )
+        self.watch_source_lang_combo.pack(side=tk.LEFT, padx=(4, 0))
 
-        file_frame = tk.Frame(container)
-        file_frame.pack(fill=tk.X, pady=(0, 4))
-        tk.Label(file_frame, text="ログファイル:").pack(side=tk.LEFT)
-        self.file_combo = ttk.Combobox(file_frame, state="readonly", width=24)
+        tk.Label(lang_frame, text="翻訳先:").pack(side=tk.LEFT, padx=(12, 0))
+        self.watch_target_lang_var = tk.StringVar(value="JA")
+        self.watch_target_lang_combo = ttk.Combobox(
+            lang_frame,
+            textvariable=self.watch_target_lang_var,
+            values=list(self.LANG_OPTIONS.keys()) + ["JA"],
+            state="readonly",
+            width=10,
+        )
+        self.watch_target_lang_combo.pack(side=tk.LEFT, padx=(4, 0))
+
+        tk.Label(lang_frame, text="ログファイル:").pack(side=tk.LEFT, padx=(12, 0))
+        self.file_combo = ttk.Combobox(lang_frame, state="readonly", width=24)
         self.file_combo.pack(side=tk.LEFT, padx=(4, 0))
-        self.refresh_btn = tk.Button(file_frame, text="🔄", command=self._refresh_files)
+        self.refresh_btn = tk.Button(lang_frame, text="🔄", command=self._refresh_files)
         self.refresh_btn.pack(side=tk.LEFT, padx=(4, 0))
 
-        btn_frame = tk.Frame(container)
-        btn_frame.pack(fill=tk.X, pady=(0, 4))
-        self.watch_btn = tk.Button(btn_frame, text="▶ 監視開始", command=self._toggle_watch)
-        self.watch_btn.pack(side=tk.LEFT)
-        self.status_label = tk.Label(btn_frame, text="停止中", fg="gray")
-        self.status_label.pack(side=tk.LEFT, padx=(8, 0))
+        self.watch_btn = tk.Button(lang_frame, text="▶ 監視開始", command=self._toggle_watch)
+        self.watch_btn.pack(side=tk.LEFT, padx=(8, 0))
+        self.status_label = tk.Label(lang_frame, text="停止中", fg="gray")
+        self.status_label.pack(side=tk.LEFT, padx=(4, 0))
 
-        # 翻訳履歴リスト（横スクロール対応）
-        list_frame = tk.Frame(container)
-        list_frame.pack(fill=tk.BOTH, expand=True)
-        self.history_list = tk.Listbox(list_frame, height=8, font=("Meiryo", 9))
-        self.history_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        v_scroll = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.history_list.yview)
-        h_scroll = ttk.Scrollbar(list_frame, orient=tk.HORIZONTAL, command=self.history_list.xview)
-        self.history_list.config(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+        # 翻訳履歴リスト（折り返し対応）
+        self.history_text = tk.Text(container, height=8, wrap=tk.WORD, font=("Meiryo", 9))
+        self.history_text.pack(fill=tk.BOTH, expand=True)
+        v_scroll = ttk.Scrollbar(self.history_text, orient=tk.VERTICAL, command=self.history_text.yview)
+        self.history_text.config(yscrollcommand=v_scroll.set)
         v_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        h_scroll.pack(side=tk.BOTTOM, fill=tk.X)
 
     def _update_window_size(self, event=None):
         self.root.update_idletasks()
@@ -237,10 +244,10 @@ class TranslatorApp:
     def _on_shift_enter(self, event):
         return None  # 普通に改行
 
-    def _translate(self, text=None, source_lang=None, target_lang=None):
+    def _translate(self, text=None, source_lang=..., target_lang=None):
         if target_lang is None:
             target_lang = self.lang_var.get()
-        if source_lang is None:
+        if source_lang is ...:
             selected = self.source_lang_var.get()
             source_lang = None if selected == "Auto" else selected
         if text is None:
@@ -273,15 +280,8 @@ class TranslatorApp:
             self.copy_btn.config(text="✅ コピー完了")
             self.root.after(1500, lambda: self.copy_btn.config(text="📋 結果をコピー"))
 
-    def _browse_folder(self):
-        path = filedialog.askdirectory(initialdir=self.folder_entry.get() or os.path.expanduser("~"))
-        if path:
-            self.folder_entry.delete(0, tk.END)
-            self.folder_entry.insert(0, path)
-            self._refresh_files()
-
     def _refresh_files(self):
-        folder = self.folder_entry.get().strip()
+        folder = self.chat_log_folder
         if not folder or not os.path.isdir(folder):
             self.file_combo["values"] = []
             return
@@ -323,7 +323,7 @@ class TranslatorApp:
             return []
 
     def _start_watch(self):
-        folder = self.folder_entry.get().strip()
+        folder = self.chat_log_folder
         filename = self.file_combo.get()
         if not folder or not filename:
             messagebox.showwarning("注意", "フォルダとファイルを選択してください")
@@ -372,7 +372,10 @@ class TranslatorApp:
                     # メッセージスキップチェック（完全一致、大文字小文字無視）
                     if message.strip().lower() in self.skip_messages:
                         continue
-                    translated = self._translate(text=message, source_lang=None, target_lang="JA")
+                    watch_source = self.watch_source_lang_var.get()
+                    watch_source_lang = None if watch_source == "Auto" else watch_source
+                    watch_target = self.watch_target_lang_var.get()
+                    translated = self._translate(text=message, source_lang=watch_source_lang, target_lang=watch_target)
                     if translated:
                         display = f"{message}（{translated}）" if self.show_original_var.get() else translated
                         self._add_history(name, display)
@@ -381,10 +384,12 @@ class TranslatorApp:
         self.poll_after_id = self.root.after(POLL_INTERVAL, self._poll_file)
 
     def _add_history(self, name, text):
-        entry = f"{name}: {text}"
-        self.history_list.insert(0, entry)
-        if self.history_list.size() > MAX_HISTORY:
-            self.history_list.delete(tk.END)
+        entry = f"{name}: {text}\n"
+        self.history_text.insert("1.0", entry)
+        # 最大行数を超えたら古いものを削除
+        lines = self.history_text.get("1.0", tk.END).splitlines()
+        if len(lines) > MAX_HISTORY:
+            self.history_text.delete(f"{MAX_HISTORY + 1}.0", tk.END)
 
 
 def main():
