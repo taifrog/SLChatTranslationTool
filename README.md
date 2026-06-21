@@ -41,16 +41,21 @@ pip install -r requirements.txt
 
 ```json
 {
-    "api_key": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xx",
-    "default_source_lang": "JA",
-    "default_target_lang": "EN"
-    "chat_log_folder": "C:/Users/...",
+    "api_key": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xx",    [API Key（必須）]
+    "default_source_lang": "JA",                             [入力言語のデフォルト]
+    "default_target_lang": "EN"                              [翻訳言語のデフォルト]
+    "chat_log_folder": "C:/Users/...",                       [チャットログフォルダ（必須）]
+    "skip_messages": ["Hi", "Hello", ...],                   [翻訳スキップするチャット]
+    "skip_speakers": ["Second Life", "System", ...]          [翻訳スキップする話し手]
 }
 ```
 
 APIキーは [DeepL公式サイト](https://www.deepl.com/pro-api) で取得できます（無料版あり）。
+
 チャットログフォルダは、Firestormの場合、デフォルトでは C:\Users\[loginname]\AppData\Roaming\Firestorm_x64\[username] にありますが、
 設定 > セットアップ > ディレクトリを確認してください。
+
+翻訳スキップする話し手に自分の名前を入れておくと、自分で入力したメッセージの翻訳をスキップすることが出来ます。
 
 ### 3. 起動
 
@@ -72,7 +77,7 @@ main.pyをダブルクリックし、Pythonで開くように選択
 2. **監視開始**ボタンでリアルタイム翻訳開始
 
 ### その他
-1. **▼（黒い三角）**ボタンで、各セクションを閉じることが出来ます
+1. ▼（黒い三角）ボタンで、各セクションを閉じることが出来ます
 2. マウスでウィンドウの端・角をつかんでドラッグすることでサイズを変更できます
 
 ### チャットログ監視

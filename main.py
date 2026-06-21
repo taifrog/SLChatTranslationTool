@@ -244,7 +244,7 @@ class TranslatorApp:
     def _on_shift_enter(self, event):
         return None  # 普通に改行
 
-    def _translate(self, text=None, source_lang=..., target_lang=None):
+    def _translate(self, text=None, source_lang=..., target_lang=None, update_output=True):
         if target_lang is None:
             target_lang = self.lang_var.get()
         if source_lang is ...:
@@ -263,9 +263,10 @@ class TranslatorApp:
             return
 
         display_text = f"{text}（{translated}）" if self.show_original_var.get() else translated
-        self.output_box.delete("1.0", tk.END)
-        self.output_box.insert(tk.END, display_text)
-        self._copy_to_clipboard(display_text)
+        if update_output:
+            self.output_box.delete("1.0", tk.END)
+            self.output_box.insert(tk.END, display_text)
+            self._copy_to_clipboard(display_text)
         return translated
 
     def _clear_input(self):
@@ -375,7 +376,7 @@ class TranslatorApp:
                     watch_source = self.watch_source_lang_var.get()
                     watch_source_lang = None if watch_source == "Auto" else watch_source
                     watch_target = self.watch_target_lang_var.get()
-                    translated = self._translate(text=message, source_lang=watch_source_lang, target_lang=watch_target)
+                    translated = self._translate(text=message, source_lang=watch_source_lang, target_lang=watch_target, update_output=False)
                     if translated:
                         display = f"{message}（{translated}）" if self.show_original_var.get() else translated
                         self._add_history(name, display)
