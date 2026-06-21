@@ -24,7 +24,7 @@ SL内で使用される翻訳ツールや、ブラウザ搭載の機能との違
 
 - **OS**: Windowsのみ
 - **OTHER**: Python3.6以上（`deepl>=1.15.0` および `pyperclip>=1.8.2`、`tkinter`を使用、すべて3.6以上に含まれる）
-※Pythonはhttps://www.python.org/downloads/でダウンロードできます
+※Pythonは https://www.python.org/downloads/ でダウンロードできます
 
 ## セットアップ
 
